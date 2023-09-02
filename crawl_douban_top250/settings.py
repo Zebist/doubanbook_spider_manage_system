@@ -28,7 +28,7 @@ NEWSPIDER_MODULE = "crawl_douban_top250.spiders"
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -56,7 +56,6 @@ DOWNLOAD_DELAY_RANDOMIZE = True  # 随机化下载延迟
 #SPIDER_MIDDLEWARES = {
 #    "crawl_douban_top250.middlewares.CrawlDoubanTop250SpiderMiddleware": 543,
 #}
-LOG_LEVEL = 'WARNING'
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
@@ -64,7 +63,7 @@ DOWNLOADER_MIDDLEWARES = {
    "crawl_douban_top250.middlewares.CrawlRecordMiddleware": 600,
 }
 PROXY_URL1 = "http://proxy.siyetian.com/apis_get.html?token=AesJWLORUQw4ERJdXTq10dPRVQ45kaBBjTB1STqFUeNpXQ10ERFpXT6VVMPRUV31EVVFzTUdmM.QN3UTM4UzM5YTM&limit=20&type=0&time=&repeat=0&isp=0&data_format=json"
-PROXY_URL2 = "http://proxy.siyetian.com/apis_get.html?token=AesJWLNR1Zx0ERJdXTq10dPRVQ45ERFFTTB1STqFUeNpXQ10ERFpXT6VVMPRUV31EVVFzTUdmM.QNzgTM4UzM5YTM&limit=20&type=0&time=&repeat=0&isp=0&data_format=json"
+PROXY_URL2 = "http://proxy.siyetian.com/apis_get.html?token=AesJWLNR1Zx0ERJdXTq10dPRVQ45ERFFTTB1STqFUeNpXQ10ERFpXT6VVMPRUV31EVVFzTUdmM.gNzkjM0YzM5YTM&limit=2&type=0&time=&repeat=0&isp=0&data_format=json"
 PROXY_URL = PROXY_URL2
 
 # Enable or disable extensions
@@ -76,9 +75,9 @@ PROXY_URL = PROXY_URL2
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "crawl_douban_top250.pipelines.DuplicatesPipeline": 100,
-    "crawl_douban_top250.pipelines.ImagePipeline": 200,
-    "crawl_douban_top250.pipelines.PostgreSQLPipeline": 300,
+    "crawl_douban_top250.pipelines.DuplicatesPipeline": 100,  # item去重
+    "crawl_douban_top250.pipelines.ImagePipeline": 200,  # 图片下载
+    "crawl_douban_top250.pipelines.PostgreSQLPipeline": 300,  # 写入postgresql数据库
 }
 IMAGES_STORE = 'media/images/douban_books'
 
@@ -109,4 +108,6 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 RETRY_ENABLED = True
-RETRY_TIMES = 10
+RETRY_TIMES = 3
+
+# LOG_LEVEL = 'INFO'
