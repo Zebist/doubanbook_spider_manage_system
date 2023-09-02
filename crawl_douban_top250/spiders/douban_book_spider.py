@@ -5,35 +5,37 @@ import scrapy
 import psycopg2
 
 from crawl_douban_top250.items import DoubanBookItem
+from crawl_douban_top250.scrapy_headers import HEADERS
 
 
 class DoubanBookSpider(scrapy.Spider):
     # 豆瓣爬虫，用于爬取豆瓣阅读TOP250
     name = "douban_book"
     start_urls = ["https://book.douban.com/top250"]
-    # 设置请求头
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/58.0.3029.110 Safari/537.3',
-        'Referer': 'no-referrer-when-downgrade',
+
+    default_meta = {
+        'handle_httpstatus_list': [302],
+        'dont_redirect': True,
     }
 
     def init_urls(self):
         # 初始化url列表，将数据库记录未成功爬取的加入到列表中
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            SELECT url FROM douban_books_doubanbookcrawlrecord WHERE is_ok IS FALSE;
-        """)
-        url_list = list(map(lambda r: r[0], cursor.fetchall()))
-        self.start_urls = list(set(self.start_urls + url_list))
+        conn = getattr(self, "conn")
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT url FROM douban_books_doubanbookcrawlrecord WHERE is_ok IS NOT TRUE;
+            """)
+            url_list = list(map(lambda r: r[0], cursor.fetchall()))
+            self.start_urls = list(set(self.start_urls + url_list))
 
     def start_requests(self):
         self.init_urls()  # 初始化url列表，将数据库记录的之前爬取失败的记录添加进来
         for url in self.start_urls:
-            yield scrapy.Request(url, headers=self.headers, callback=self.parse)
+            yield scrapy.Request(url, headers=HEADERS, callback=self.parse, meta=self.default_meta)
 
     def parse(self, response):
+        self.logger.info(f'\n=============URL: {response.request.url}=============\n')
         node_list = response.css("tr.item")  # 获取本页每个书本的元素
         next_page = response.css("span.next a")  # 下一页
         for node in node_list:
@@ -61,7 +63,7 @@ class DoubanBookSpider(scrapy.Spider):
             yield item
 
         # 请求下一页
-        yield from response.follow_all(next_page, headers=self.headers, callback=self.parse)
+        yield from response.follow_all(next_page, headers=HEADERS, callback=self.parse, meta=self.default_meta)
 
     def get_title(self, title_raw_list):
         """

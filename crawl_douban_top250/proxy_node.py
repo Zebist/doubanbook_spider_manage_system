@@ -4,6 +4,7 @@ class ProxyNode(object):
         self.ip = ip
         self.port = port
         self.max_count = max_count
+        self.remain_count = max_count
 
     @property
     def address(self):

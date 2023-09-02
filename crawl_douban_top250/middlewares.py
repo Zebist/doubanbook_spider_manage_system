@@ -2,8 +2,7 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import random
-import json
+import re
 import logging
 
 import requests
@@ -118,10 +117,73 @@ class ProxyMiddleware(RetryMiddleware):
     # 代理中间件，在重试时更换代理ip
     def __init__(self, *args, **kwargs):
         super(ProxyMiddleware, self).__init__(*args, **kwargs)
-        # self.logger = logging.getLogger(__name__)
+
+        self.logger = logging.getLogger(__name__)
         self.proxy_url = settings["PROXY_URL"]
+        self.proxy_node = None
         self.proxy_list = []
-        self.max_use_count = 4
+        self.max_use_count = -1
+
+    def process_request(self, request, spider):
+        # 在发出请求前对请求进行处理，添加和维护proxy
+        if not self.proxy_url:  # 未设置代理url，视为不启用代理，不进行处理
+            return
+        self.handle_request_proxy(request)  # 处理proxy
+        self.handle_proxy_remain()  # 更新proxy节点的可用次数
+        self.logger.info(f"\nStarting Request for URL: {request.url}, META: {request.meta}\n")
+
+    def process_response(self, request, response, spider):
+        # 处理响应时，检查是否需要切换代理并重新请求
+        # 当前仅top250页面需要作重定向处理，其他页面可根据后续需要调整
+        if 'top250' in request.url:
+            with open(f'temp/response.html', 'w') as f:
+                f.write(response.text)
+            is_redirect = self.check_is_redirect(response)
+            # 遇到302响应时（包括js脚本跳转）切换代理并重新请求
+            if is_redirect:
+                return self.handle_redirect(request, response, spider)
+
+        return response
+
+    def process_exception(self, request, exception, spider):
+        # 异常时重新请求
+        if 'proxy' in request.meta:
+            res = self.retry_request_page_with_new_proxy(request, f"Exception:{exception}", spider)
+            self.logger.info(
+                f"\nCatch exception: {exception} when request URL: {request.url}. "
+                f"Switching to a new proxy: {request.meta.get('proxy')} \n")
+
+            return res
+
+    def handle_redirect(self, request, response, spider):
+        # 处理重定向响应
+        # 设置代理
+        if 'proxy' in request.meta:
+            res = self.retry_request_page_with_new_proxy(request, "302 Redirecting response", spider)
+            self.logger.info(
+                f"\nReceived {response.status} response: {response} "
+                f"Switching to a new proxy: {request.meta.get('proxy')},  "
+                f"URL: {request.url} \n"
+            )
+            if res:
+                return res
+            else:
+                raise IgnoreRequest("This request is being ignored because it exceeded the maximum retry limit.")
+
+    def check_is_redirect(self, response):
+        """
+        检查是否重定向
+        :param response: 响应对象
+        :return: True是重定向 False不是重定向
+        """
+        # 有下一页，就视为非重定向，没有就视为重定向
+        not_redirect = bool(response.css("span.next"))
+        return not not_redirect
+        # page_html = response.text
+        # retry_flag = 'window.location.href="https://sec.douban.com/a?c=e8aaea&d="+d+"&r=https%3A%2F%2Fbook.douban.com%2Ftop250%3Fstart%3D150&k=3TDUhdqDEeE0h2MJPjIJJYlwZupXlc0IVI%2BbiEkrxYY"'
+        # is_redirect = response.status == 302
+        # return bool(is_redirect or re.match(r'^<script>.*</script>', page_html) or retry_flag in page_html)
+
 
     def extend_proxy_list(self, proxy_data_list):
         # 将请求到的代理列表格式化后保存
@@ -130,88 +192,73 @@ class ProxyMiddleware(RetryMiddleware):
             self.proxy_list.append(pn)
 
     def refresh_proxy_list(self, proxy_url):
-        # 刷新代理列表
-        response = requests.get(proxy_url)
-        json_data = response.json()
-        try:
-            if json_data['code'] == 1:
-                self.extend_proxy_list(json_data)
-            else:
-                logging.warning(
-                    f'Can not to retrieve proxy data. Status code: {response.status_code}, data: {json_data}')
-        except requests.exceptions.RequestException as e:
-            logging.warning(f'An error occurred during the request of proxy: {e}')
-        except AttributeError as e:
-            logging.warning(f'Attribute error: {e}')
-        except Exception as e:
-            logging.error(f'An unexpected error occurred: {e}')
+        # 当无可用代理时，刷新代理列表
+        if not self.proxy_list:
+            response = requests.get(proxy_url)
+            json_data = response.json()
+            try:
+                if json_data['code'] == 1:
+                    self.extend_proxy_list(json_data)
+                else:
+                    self.logger.warning(
+                        f'Can not to retrieve proxy data. Status code: {response.status_code}, data: {json_data}')
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f'An error occurred during the request of proxy: {e}')
+            except AttributeError as e:
+                self.logger.error(f'Attribute error: {e}')
+            except Exception as e:
+                self.logger.error(f'An unexpected error occurred: {e}')
 
     def set_proxy(self, request):
         # 设置代理
         if self.proxy_list:
             p_node = self.proxy_list.pop()
             request.meta['proxy'] = p_node.address
-            request.meta['proxy_remain'] = p_node.max_count
+            self.proxy_node = p_node
+            self.logger.info(f"\nGet new proxy: {request.meta['proxy']} for url: {request.url}\n")
 
-    def process_request(self, request, spider):
-        # 在第一次请求时添加代理
-        if not self.proxy_url:
-            return
-        # 第一次请求时添加代理
-        if 'proxy' not in request.meta:
-            # 无可用代理，刷新代理列表
-            if not self.proxy_list:
-                self.refresh_proxy_list(self.proxy_url)
-            # 设置代理
-            self.set_proxy(request)
+    def update_proxy(self, request):
+        # 更新代理
+        self.refresh_proxy_list(self.proxy_url)  # 无可用代理时重新获取代理
+        self.set_proxy(request)  # 取出代理节点并设置代理到请求中
 
-    def handle_proxy_remain(self, proxy_remain, request):
-        # 每次请求将节点可用次数-1，防止超过限制数量，防止屏蔽
-        if proxy_remain > 0:
-            request.meta['proxy_remain'] -= 1
+    def use_origin_proxy(self, request):
+        # 继续使用原来的proxy
+        request.meta['proxy'] = self.proxy_node.address
+        self.logger.info(f"\nUse proxy: {request.meta['proxy']} for url: {request.url}\n")
+
+    def handle_proxy_remain(self):
+        # 每次请求将节点可用次数减1，防止超过限制数量，防止屏蔽
+        if self.proxy_node and self.proxy_node.remain_count > 0:
+            self.proxy_node.remain_count -= 1
 
     def retry_request_page_with_new_proxy(self, request, reason, spider):
         # 启用了代理，且可用代理列表为空时，刷新代理列表
-        if 'proxy' in request.meta and not self.proxy_list:
-            self.refresh_proxy_list(self.proxy_url)
-        self.set_proxy(request)
+        self.update_proxy(request)  # 更新代理
         res = self._retry(request, reason=reason, spider=spider)  # 重新请求
         return res
 
-    def process_response(self, request, response, spider):
-        # 每次请求时处理代理节点
-        proxy_remain = request.meta.get('proxy_remain', 0)
-        self.handle_proxy_remain(proxy_remain, request)
-
-        # 遇到302响应时切换代理并重新请求
-        if response.status == 302 or proxy_remain == 0:
-            # 设置代理
-            res = self.retry_request_page_with_new_proxy(request, "302 Redirecting response", spider)
-            logging.warning(
-                f"Received a 302 Redirecting response: {response} Switching to a new proxy: {request.meta['proxy']} ")
-            if res:
-                return res
+    def handle_request_proxy(self, request):
+        """
+        处理请求时的proxy
+        :param request: request请求对象
+        :return:
+        """
+        # reqeust没有proxy时，进行设置处理
+        if 'proxy' not in request.meta:
+            # 如果存在有可用次数的代理节点，则直接使用原代理
+            if self.proxy_node and self.proxy_node.remain_count != 0:
+                self.use_origin_proxy(request)
+            # 如果不存在，则获取新的代理
             else:
-                raise IgnoreRequest("This request is being ignored because it exceeded the maximum retry limit.")
-
-        return response
-
-    def process_exception(self, request, exception, spider):
-        # 处理连接问题，例如拒绝连接或超时
-        if isinstance(exception, ConnectionRefusedError):
-            # 重试
-            res = self.retry_request_page_with_new_proxy(request, "Connection refused", spider)
-            logging.warning(
-                f"Connection refused: {request.url} Switching to a new proxy: {request.meta['proxy']} ")
-
-            return res
+                self.update_proxy(request)  # 更新代理
 
 
 class CrawlRecordMiddleware(RetryMiddleware):
     # 爬取记录中间件，用来记录url的爬取结果
     def __init__(self, *args, **kwargs):
         super(CrawlRecordMiddleware, self).__init__(*args, **kwargs)
-        # self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
     def process_response(self, request, response, spider):
         # 每次返回结果时进行判断
@@ -228,15 +275,14 @@ class CrawlRecordMiddleware(RetryMiddleware):
         :param spider: 爬虫对象
         :return:
         """
-        # 豆瓣阅读的403是登录界面，不需要记录
-        if status_code == 403:
-            return
         url = request.url
-        is_exist = self.check_is_exist(url, spider)
-        # 根据数据库记录情况选择处理方法，已存在进行更新，未存在则进行创建记录
-        handle_method = self.choice_handle_method(is_exist)
-        # 执行操作，根据请求结果记录爬取结果
-        handle_method(url, status_code==200, spider)
+        # 只需要记录top250的页面
+        if 'top250' in url:
+            is_exist = self.check_is_exist(url, spider)
+            # 根据数据库记录情况选择处理方法，已存在进行更新，未存在则进行创建记录
+            handle_method = self.choice_handle_method(is_exist)
+            # 执行操作，根据请求结果记录爬取结果
+            handle_method(url, status_code==200, spider)
 
     def choice_handle_method(self, is_exist):
         """
@@ -281,7 +327,7 @@ class CrawlRecordMiddleware(RetryMiddleware):
                 spider.conn.commit()
         except Exception as e:
             spider.conn.rollback()
-            logging.error(f"Add crawl record to database failed！ Please Check: {e}")
+            self.logger.error(f"Add crawl record to database failed！ Please Check: {e}")
 
     def update_to_database(self, url, flag, spider):
         """
@@ -298,4 +344,4 @@ class CrawlRecordMiddleware(RetryMiddleware):
                 spider.conn.commit()
         except Exception as e:
             spider.conn.rollback()
-            logging.error(f"Update crawl record to database failed！ Please Check: {e}")
+            self.logger.error(f"Update crawl record to database failed！ Please Check: {e}")

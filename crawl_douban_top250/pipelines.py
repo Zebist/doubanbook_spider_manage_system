@@ -9,7 +9,6 @@ import re
 import logging
 from datetime import datetime
 
-
 import psycopg2
 import configparser
 import scrapy
@@ -17,6 +16,7 @@ import scrapy
 from psycopg2.extensions import AsIs
 from scrapy.exceptions import DropItem
 from scrapy.pipelines.images import ImagesPipeline
+from crawl_douban_top250.scrapy_headers import get_image_headers
 from itemadapter import ItemAdapter
 
 
@@ -61,6 +61,12 @@ class PostgreSQLPipeline(object):
         existing_item_id = cursor.fetchone()
 
         return existing_item_id[0] if existing_item_id else existing_item_id
+
+    def extract_douban_id(self, book_url):
+        # 从书本的url中提取出豆瓣的数据id，用来作区分数据的依据
+        # todo 异常处理
+        douban_id = re.match(r'.*douban.com.*/subject/(\d+)/', book_url)
+        return douban_id.group(1)
 
     def update_data(self, item_id, item, cursor):
         # 更新已存在的记录
@@ -144,30 +150,33 @@ class PostgreSQLPipeline(object):
     def process_item(self, item, spider):
         # 处理数据，写入到数据库
         # 同时作去重处理
-        try:
-            # 每个游标会开启一个事物，在事物内插入数据，避免和前端用户操作冲突
-            with self.conn.cursor() as cursor:
-                # 去重处理
-                existing_item_id = self.get_existing_item_id(item["douban_id"], cursor)
 
+        # 每个游标是一个事物，在事物内插入数据，避免和前端用户操作冲突
+        with self.conn.cursor() as cursor:
+            item["douban_id"] = self.extract_douban_id(item["book_url"])
+            existing_item_id = self.get_existing_item_id(item["douban_id"], cursor)
+            try:
+                # 获取douban_id
+                # 去重处理
                 if existing_item_id:
                     # 对已存在记录进行更新
                     self.update_data(existing_item_id, item, cursor)
                 else:
                     # 新增未创建的记录
                     self.create_data(item, cursor)
+                # 完成后提交事物
+                self.conn.commit()
+                return item
 
-            # 完成后提交事物
-            self.conn.commit()
-            return item
-        except Exception as e:
-            # 异常时回滚事物
-            self.conn.rollback()
-            raise DropItem(f"Error processing item: {e}  {item}, "
-                           f"Pipeline: PostgreSQLPipeline, existing_item_id: {existing_item_id}")
+            except Exception as e:
+                # 异常时回滚事物
+                self.conn.rollback()
+                raise DropItem(f"Error processing item: {e}  {item}, "
+                               f"Pipeline: PostgreSQLPipeline, existing_item_id: {existing_item_id}")
 
 
 class ImagePipeline(ImagesPipeline):
+    # 图片管道
     def __init__(self, *args, **kwargs):
         super(ImagePipeline, self).__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
@@ -177,26 +186,27 @@ class ImagePipeline(ImagesPipeline):
 
     def get_media_requests(self, item, info):
         # Yield a request for each image URL in the item
-        yield scrapy.Request(item['cover_path'])
+        # yield scrapy.Request(item['cover_path'], headers=self.headers)
+        yield scrapy.Request(item['cover_path'], headers=get_image_headers(item['cover_path']))
 
     def item_completed(self, results, item, info):
         # 将图片路径存储到item
         try:
-            # print("===========================================")
-            # print(results)
-            # print("===========================================")
             if results:
                 item['cover_path'] = results[0][0] and results[0][1].get('path')
+
         except (IndexError, KeyError, AttributeError) as e:
             # 处理异常
             self.logger.error(f"An error occurred while extracting image path: {e}, item: {item}, result: {results}")
-
 
         return item
 
 
 class DuplicatesPipeline(object):
-    # 去重管道
+    """
+    去重管道
+    提取并设置去重标识，进行去重处理
+    """
     def __init__(self):
         # 创建一个一存在数据列表，存储douban_id
         self.existing_douban_id = set()
