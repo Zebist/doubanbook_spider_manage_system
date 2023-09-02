@@ -122,7 +122,7 @@ class ProxyMiddleware(RetryMiddleware):
         self.proxy_url = settings["PROXY_URL"]
         self.proxy_node = None
         self.proxy_list = []
-        self.max_use_count = -1
+        self.max_use_count = 100
 
     def process_request(self, request, spider):
         # 在发出请求前对请求进行处理，添加和维护proxy
