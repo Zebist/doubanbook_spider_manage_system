@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d8e0e9a5-e23b-4b72-bf27-31b3a772dc01" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/crawl_douban_top250/middlewares.py" beforeDir="false" afterPath="$PROJECT_DIR$/crawl_douban_top250/middlewares.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1006197.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1008357.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1012307.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1021273.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1033825.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1035848.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1036274.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1043815.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/10555486.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1056315.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/10738023.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/10758290.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/10774752.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1085883.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1086249.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1102715.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1813841.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1859140.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1949420.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1964774.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/1974029.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/20421947.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/2046236.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/20507206.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/21570668.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/2158684.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/2326403.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/25862578.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26295448.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26389895.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26413154.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26435510.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26545308.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26585065.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26586492.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26704403.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/26854318.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/3017857.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/30414743.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/30484795.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/3131626.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/33424487.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/3369793.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/34896921.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/35587028.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/36096304.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/3815125.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/3995526.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/4166819.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/images/douban_books/cover_path/6789551.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/temp/response.html" beforeDir="false" afterPath="$PROJECT_DIR$/temp/response.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="2Upcq71rYJfLf8oaVtmT5EwOPEa" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "dev",
+    "last_opened_file_path": "/home/zzb/Desktop/scrapy_manage_system/crawl_douban_top250",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/crawl_douban_top250" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/temp" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="temp" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="scrapy_management_system" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/temp" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temp/temp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.temp" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d8e0e9a5-e23b-4b72-bf27-31b3a772dc01" name="Changes" comment="" />
+      <created>1693640149931</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1693640149931</updated>
+    </task>
+    <servers />
+  </component>
+</project>
