@@ -21,15 +21,15 @@
         host = localhost
         port = 5432
 ### 2. 爬虫设置
-      在scrapy_manage_system/**crawl_douban_top250**/目录下的**settings.py**进行设置
+      在scrapy_manage_system/crawl_douban_top250/目录下的settings.py进行设置
 #### 1. 两个可用的中间件（默认已开启，下述顺序为执行顺序）
-        1.  代理中间件ProxyMiddleware（继承自RetryMiddleware）
+##### 1.  代理中间件ProxyMiddleware（继承自RetryMiddleware）
             1. 实现了自动识别重定向和代理切换
             2. 代理可重复使用，直至无法连接或被禁用
             3. 如需切换其他代理，在settings.py文件中设置PROXY_URL，中间件会从该URL获取代理池
-                1. 重写修改ProxyMiddleware的req_new_proxy方法，可以支持不同返回格式的代理，只要在该方法内将返回结果处理到和期望的JSON格式一致，即可正常和其他功能对接```json{'code': 1, 'info': '获取成功', 'data': [{'ip': 0.0.0.0, 'port': 8080}]}```
+                  1. 重写修改ProxyMiddleware的req_new_proxy方法，可以支持不同返回格式的代理，只要在该方法内将返回结果处理到和期望的JSON格式一致，即可正常和其他功能对接```json{'code': 1, 'info': '获取成功', 'data': [{'ip': 0.0.0.0, 'port': 8080}]}```
             4. 如无需启用代理，关闭中间件，或将settings.py文件中的PROXY_URL值删除即可
-        2.  记录中间件CrawlRecordMiddleware
+#### 2.  记录中间件CrawlRecordMiddleware
             1. 用于记录每次爬取的页面地址和爬取结果
             2. 只记录TOP250页面，不记录图片页面
             3. 在初始化url时，将未爬取成功的记录导入到初始url，补爬遗漏的数据
