@@ -39,8 +39,8 @@
       1. 数据存在media文件夹中，正式环境可迁移对接到文件系统
       3. PostgreSQL管道： 将数据插入到PostgreSQL
 ## 3. 运行环境
-      1. 在根目录运行```shell python manage.py runserver 0.0.0.0:8080```启动web服务
-      2. 在根目录运行```shell celery -A scrapy_management_system worker --loglevel=info```启动Celery队列
+      1. 在根目录运行python manage.py runserver 0.0.0.0:8080启动web服务
+      2. 在根目录运行celery -A scrapy_management_system worker --loglevel=info启动Celery队列
       3. 使用IP访问页面，在首页可以看到【开始爬取】按钮，单击后即可启动爬虫
           1. 页面默认每10秒刷新1次，启动后会在每次刷新时加载数据
 ## 3. 技术说明
