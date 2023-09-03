@@ -1,20 +1,16 @@
 ![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/94076116-98b0-4aa7-9aa7-829cb80eb6be)# scrapy_manage_system 爬虫管理系统
 ## 用于爬取DOUBAN图书 TOP250列表
 ## 1. 环境安装
-       1. Python版本： 3.10.12   
-       2. 依赖包，请用根目录下requirement.txt安装python依赖
-          ```shell```
-       pip install -r requirement.txt
-       ```
-       3. 需要安装redis，以配合celery使用
-       ```shell
-       apt-get install redis
-       ```
-       4. 安装postgresql数据库，并创建数据库
-       5. 在根目录下执行迁移```shell
-       python manage.py makemigrations
-       python manage.py migrate
-       ```
+       ## 1. Python版本： 3.10.12   
+       ## 2. 依赖包，请用根目录下requirement.txt安装python依赖
+              pip install -r requirement.txt
+       ## 3. 需要安装redis，以配合celery使用
+              apt-get install redis
+       
+       ## 4. 安装postgresql数据库，并创建数据库
+       ## 5. 在根目录下执行迁移
+              python manage.py makemigrations
+              python manage.py migrate
 ## 2. 文件配置
       1. 数据库设置
           1. 在根目录的db_info.ini文件中设置数据库信息，参考如下```ini
