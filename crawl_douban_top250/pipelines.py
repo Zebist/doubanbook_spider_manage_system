@@ -6,6 +6,7 @@
 
 # useful for handling different item types with a single interface
 import re
+import pytz
 import logging
 from datetime import datetime
 
@@ -108,14 +109,14 @@ class PostgreSQLPipeline(object):
             item['review_count'],
             item['summary'],
             item['is_readability'],
-            datetime.now(),
+            datetime.now(pytz.utc),
             item_id
         )
         cursor.execute(sql, values)
 
     def create_data(self, item, cursor):
         # 创建新纪录
-        now = datetime.now()
+        utc_time = datetime.now(pytz.utc)
         sql = """
         INSERT INTO 
             %s 
@@ -144,8 +145,8 @@ class PostgreSQLPipeline(object):
             item['rating'],
             item['review_count'],
             item['summary'],
-            now,
-            now,
+            utc_time,
+            utc_time,
             item['is_readability']
         )
         cursor.execute(sql, values)
@@ -187,11 +188,10 @@ class ImagePipeline(ImagesPipeline):
         self.logger = logging.getLogger(__name__)
 
     def file_path(self, request, response=None, info=None, *, item=None):
-        return 'cover_path/{0}.jpg'.format(item['douban_id'])
+        return 'images/douban_books/cover_path/{0}.jpg'.format(item['douban_id'])
 
     def get_media_requests(self, item, info):
         # Yield a request for each image URL in the item
-        # yield scrapy.Request(item['cover_path'], headers=self.headers)
         yield scrapy.Request(item['cover_path'], headers=get_image_headers(item['cover_path']))
 
     def item_completed(self, results, item, info):

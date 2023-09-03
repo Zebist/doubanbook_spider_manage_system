@@ -1,21 +1,24 @@
 var API_URL = '/api/';
 var DOUBAN_BOOK_URL = API_URL + 'douban_books/';
-//var MEDIA_PATH = '/media/images/douban_books/';
+var DEFAULT_TIMEZONE = "Asia/Shanghai";
+var NEED_DELETE_ID = null;
+var REFRESH_TIME = 10000;  // 每10秒刷新
 
 $(function () {
     var $table = $("#data_table");  // 获取表格
-    var $table_ob = get_field_list($table);  // 获取接口提供的字段
-    // 监听编辑按钮点击事件
-    $table.on("click",".edit-btn", function(event){
-        event.preventDefault();
-        handle_edit($(this));
-    });
-    // 监听保存按钮点击事件
-    $("#save").on("click", function(event){
-        add_record();
-    });
+    get_field_list($table);  // 获取接口提供的字段
+
     $('#addForm').on('submit', function(event) {
         event.preventDefault(); // 阻止表单的默认提交行为
+    });
+
+    $("#start_spider_btn").click(function(e) {
+        start_spider();
+    });
+
+    // 当用户点击取消按钮或模态框外部时执行的操作
+    $("#confirmationModal").on("hidden.bs.modal", function() {
+      NEED_DELETE_ID = null;
     });
 });
 
@@ -38,7 +41,6 @@ function create_post_params() {
     var form_data = new FormData();
     var files = $("#cover_path").prop("files");
     var file = files.length > 0 ? files[0] : null;
-    console.log(file);
     form_data.append('title', $("#title").val());
     form_data.append('title_2', $("#title_2").val());
     form_data.append('douban_id', $("#douban_id").val());
@@ -52,22 +54,24 @@ function create_post_params() {
     form_data.append('rating', $("#rating").val());
     form_data.append('review_count', $("#review_count").val());
     form_data.append('summary', $("#summary").val());
-    form_data.append('is_readability', $("#is_readability").val());
     return form_data
 }
 
-function add_record() {
+function add_record($data_table) {
 // 向服务器发起POST请求，添加记录
     $.ajax({
-      url: DOUBAN_BOOK_URL, // 替换为你的API端点URL
+      url: DOUBAN_BOOK_URL,
       type: 'POST', // 请求类型为POST
       data: create_post_params(),
       processData: false,
       contentType: false,
       success: function (data, textStatus, jqXHR) {
         // 请求成功时的处理逻辑
-        if (jqXHR.status == 201)
+        if (jqXHR.status == 201) {
             alert('提交成功');
+//            $data_table.draw();
+            $data_table.ajax.reload(null, false);
+        }
         else
             alert(get_tip_message(data));
       },
@@ -75,6 +79,7 @@ function add_record() {
         // 异常时的处理逻辑
         alert('服务异常，请稍候再试！');
         console.error('异常：', error);
+        $data_table.ajax.reload(null, false);
       }
     });
 }
@@ -82,23 +87,12 @@ function add_record() {
 // 图片字段处理
 function handle_img_field(ob) {
     ob.render = function(data, type, row) {
-//        console.log(row);
         // 按数据类型返回不同的内容
         if (type === "display") {
             // 在显示模式下，返回包含图像的<img>标签
-//            console.log(MEDIA_PATH, data);
             return '<a target="_blank" href=' + row['book_url'] + '><img src="' + data + '" width="100" height="130"></a>';
         }
         // 其他模式返回原始数据
-        return data;
-    }
-}
-// 处理可试读字段
-function handle_is_readability(ob) {
-    ob.render = function(data, type, row) {
-        if (type == "display") {
-            return data ? "是" : "否"
-        }
         return data;
     }
 }
@@ -117,13 +111,33 @@ function handle_book_url(ob) {
 // 处理标题字段
 function handle_title(ob) {
     ob.render = function(data, type, row) {
-//        console.log(row);
         // 按数据类型返回不同的内容
         if (type === "display") {
             // 将标题放进a标签
             return '<a target="_blank" href=' + row['book_url'] + '>' + data + '</a>';
         }
         // 其他模式返回原始数据
+        return data;
+    }
+}
+
+function format_utc_to_user_time (data) {
+    // 将UTC时间转为用户时间
+    var user_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULT_TIMEZONE;
+    var utc_time = new Date(data);
+    var user_time = new Date(utc_time.toLocaleString("en-US", { timeZone: user_timezone }));
+    var user_timezone_offset = user_time.getTimezoneOffset();
+    var formatted_user_time = user_time.toLocaleString(undefined, { timeZone: user_timezone });
+
+   return formatted_user_time;
+}
+
+// 处理时间字段
+function handle_datetime(ob) {
+    ob.render = function (data, type, row) {
+        if (type === 'display' && data) {
+            return format_utc_to_user_time(data);
+        }
         return data;
     }
 }
@@ -148,14 +162,13 @@ function get_field_list($table) {
                 }
                 if (name == "cover_path") {
                     handle_img_field(ob);  // 图片字段处理
-                } else if (name == "is_readability") {
-                    handle_is_readability(ob);  // 可试读字段处理
                 } else if (name == "title") {
                     handle_title(ob);  // 标题字段处理
+                } else if (name == "create_date") {
+                    handle_datetime(ob);  // 处理创建时间
+                } else if (name == "update_date") {
+                    handle_datetime(ob);  // 处理更新时间
                 }
-//                else if (name == "book_url") {
-//                    handle_book_url(ob);  // 书本链接字段处理
-//                }
                 field_list.push(ob);
             });
             init_fields($table, field_list);  // 将字段更新到表中
@@ -179,14 +192,13 @@ function update_table($table, field_list, data) {
 //更新表格
     var default_list = [
        { "data": null, "title":"操作","defaultContent": "<button class='btn edit-btn btn-info' type='button'>编辑</button>"},
-       { "data": null, "title":"操作","defaultContent": "<button class='btn edit-btn btn-danger' type='button'>删除</button>"}
+       { "data": null, "title":"操作","defaultContent": "<button class='btn del-btn btn-danger' type='button'>删除</button>"}
     ]  // 默认按钮字段
 
-    $table.DataTable({
+    var $data_table = $table.DataTable({
         ajax: function (data, callback, settings) {
             //封装请求参数
             param = create_req_params(data);
-            console.log(data);
             //请求数据
             $.ajax({
                 type: "GET",
@@ -233,13 +245,13 @@ function update_table($table, field_list, data) {
         serverSide: true, // 启用服务器端分页
         bPaginate: true, // 是否显示分页器
         columnDefs: [
+//            {
+//                targets: [2], // ID列设置
+//                visible: false, // 不在表格中显示
+//                searchable: false // 不可搜索
+//            },
             {
-                targets: [2], // ID列设置
-                visible: false, // 不在表格中显示
-                searchable: false // 不可搜索
-            },
-            {
-                targets: [8], // 书籍链接列设置
+                targets: [7], // 书籍链接列设置
                 visible: false, // 不在表格中显示
                 searchable: false // 不可搜索
             },
@@ -250,6 +262,63 @@ function update_table($table, field_list, data) {
             },
         ]
     });
+    // 每分钟刷新一次页面
+    setInterval(function() {
+        $data_table.ajax.reload(null, false);
+    }, REFRESH_TIME);
+
+    // 监听编辑按钮点击事件
+    $table.on("click",".edit-btn", function(event){
+        handle_edit($(this), $data_table);
+    });
+    // 监听保存按钮事件
+    $table.on("click",".save-btn", function(event) {
+        handle_save($(this), $data_table);
+    });
+    // 监听删除按钮事件,弹出确认框
+    $table.on("click",".del-btn", function(event) {
+        $("#confirmationModal").modal("show");
+        // 获取当前行,从datatable中取出对应数据信息
+        var current_row = $(event.target).parents("tr");
+        var dt_row = $data_table.row(current_row)
+        var data = dt_row.data();
+        var row_id = data.id;
+        var title = data.title;
+        NEED_DELETE_ID = row_id;  // 记录需要删除的id
+
+        $("#confirmationModal").find(".modal-body").html("确定要删除ID:" + row_id + " " + title + " " + "吗?");
+    });
+
+    // 当用户点击确认时,执行删除
+    $("#confirmButton").click(function(e) {
+        handle_del($data_table);
+      $("#confirmationModal").modal("hide");
+    });
+    // 监听保存按钮点击事件
+    $("#save").on("click", function(event){
+        add_record($data_table);
+    });
+}
+
+// 开启爬虫
+function start_spider () {
+     $.ajax({
+          url: 'spider_center/',
+          type: 'POST', // 请求类型为POST
+          success: function (response) {
+            if (response.code == 200) {
+                alert(response.message);
+            }
+            else {
+                alert(response.message);
+            }
+          },
+          error: function (response) {
+            // 异常时的处理逻辑
+            alert('服务异常，请稍候再试！');
+            console.error('异常：', response);
+          }
+    });
 }
 
 function init_fields($table, field_list) {
@@ -257,38 +326,126 @@ function init_fields($table, field_list) {
     return update_table($table, field_list, []);
 }
 
-function handle_edit(node) {
-    // 处理编辑
+// 构造PATCH请求参数
+function create_patch_params(data, tds) {
+    var author = data.author;
+    var publisher = data.publisher;
+    var publish_date = data.publish_date;
+    var price = data.price;
+    return {
+        title: data.title,
+        title_2: data.title_2,
+        douban_id: data.douban_id,
+        book_url: data.book_url,
+        base_info: [author, publisher, publish_date, price].join("/"),
+        author,
+        publisher,
+        publish_date,
+        price,
+        rating: data.rating,
+        review_count: data.review_count,
+        summary: data.summary
+    }
+}
+
+// 处理编辑
+function handle_edit(node, $data_table) {
     var tds = node.parents("tr").children();
     // 遍历本行所有列
-    $.each(tds, function(i,val){
-        var jqob = $(val);
-        if(i < 1 || jqob.has('button').length ){return true;}  // 跳过第1项 和 按钮
-        var txt = jqob.text();
-        var put = $("<input type='text'>");
+    $.each(tds, function(i, td){
+        var $td = $(td);
+        if(i < 3 || $td.has('button').length ){return true;}  // 跳过第1项 和 按钮
+        var txt = $td.text();
+
+        if ($td.has('img').length) {  // 跳过图片
+            return true;
+        } else {
+            var put = $("<input type='text'>");
+        }
         put.val(txt);
-        jqob.html(put);  // 放入input框
+        $td.html(put);  // 放入input框
     });
     node.html("保存");  // 更改当前按钮为保存
     // 切换样式s
     node.toggleClass("edit-btn");
     node.toggleClass("save-btn");
+    $data_table.columns.adjust();
 }
-
 // 处理保存
-function handle_save2(node, $table_ob) {
-    var row = $table_ob.row(node.parents("tr"));
+function handle_save(node, $data_table) {
+    var current_row = node.parents("tr");
+    var current_row = $data_table.row(current_row);
+    var row_data = current_row.data();
+    var row_id = row_data.id;
+
     var tds = node.parents("tr").children();
-    $.each(tds, function(i,val){
-        var jqob=$(val);
-        //把input变为字符串
-        if(!jqob.has('button').length) {
-            var txt = jqob.children("input").val();
-            jqob.html(txt);
-            $table_ob.cell(jqob).data(txt);  // 修改DataTables对象的数据
+    $.each(tds, function(i, td){
+        var $td = $(td);
+        // 把input变为字符串
+        if(!$td.has('button').length && !$td.has('img').length) {
+            var txt = $td.children("input").val();
+            $td.html(txt);
+            $data_table.cell($td).data(txt);  // 修改DataTables对象的数据
         }
     });
-    node.html("编辑");
-    node.toggleClass("edit-btn");
-    node.toggleClass("save-btn");
+   var data = create_patch_params(row_data);
+
+   node.html("编辑");
+   node.toggleClass("edit-btn");
+   node.toggleClass("save-btn");
+   // 判断ID是否存在,存在才执行更新操作
+   if (row_id){
+       $.ajax({
+           url: DOUBAN_BOOK_URL + row_id + '/',
+           data: data,
+           type: 'PATCH',
+           "success":function(data, textStatus, jqXHR){
+                console.log(data, textStatus, jqXHR);
+                if (data.status == 'success'){
+                    alert("更新成功!");
+                    $data_table.ajax.reload(null, false);
+                }
+                else{
+                    let msg_list = [];
+                    $.each(data, function(field, msg) {
+                        msg_list.push(field + " " + msg);
+                    });
+                    alert(msg_list);
+                    console.log(msg_list);
+                    $data_table.ajax.reload(null, false);
+                }
+           },
+           "error": function(){
+                alert("服务异常，请稍后重试");
+                $data_table.ajax.reload(null, false);
+           }
+       });
+   } else {
+       alert('ID异常,未完成更新,请联系管理员!')
+   }
+
+    $data_table.columns.adjust();
+}
+// 处理删除
+function handle_del($data_table) {
+   // 判断ID是否存在,存在才执行删除操作
+   if (NEED_DELETE_ID){
+       $.ajax({
+           url: DOUBAN_BOOK_URL + NEED_DELETE_ID + '/',
+           type: 'DELETE',
+           "success":function(data, textStatus, jqXHR){
+                if (jqXHR.status == 200){
+                    alert("删除成功!");
+                    NEED_DELETE_ID = null;  // 重置需要删除的值
+                }
+                $data_table.ajax.reload(null, false);
+           },
+           "error": function(){
+                alert("服务异常，请稍后重试");
+                $data_table.ajax.reload(null, false);
+           }
+       });
+   } else {
+       alert('ID异常,未完成操作,请稍后再试!')
+   }
 }

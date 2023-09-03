@@ -11,7 +11,6 @@ class DoubanBookSerializer(serializers.ModelSerializer):
             'cover_path',
             'title',
             'title_2',
-            'is_readability',
             'book_url',
             'author',
             'publisher',
@@ -23,10 +22,6 @@ class DoubanBookSerializer(serializers.ModelSerializer):
             'create_date',
             'update_date',
         )
-
-    cover_path = serializers.ImageField(
-        max_length=None, use_url=True, label='封面'
-    )
 
     title = serializers.CharField(
         label='书名',
@@ -55,10 +50,9 @@ class DoubanBookSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_douban_id(self, value):
-        # 验证字段唯一性
-        if DoubanBooks.objects.filter(douban_id=value).exists():
-            raise serializers.ValidationError(f"豆瓣ID： {value} 已存在，请重新输入！")
-
-        return value
-
+    # def validate_douban_id(self, value):
+    #     # 验证字段唯一性
+    #     if DoubanBooks.objects.filter(douban_id=value).exists():
+    #         raise serializers.ValidationError(f"豆瓣ID： {value} 已存在，请重新输入！")
+    #
+    #     return value

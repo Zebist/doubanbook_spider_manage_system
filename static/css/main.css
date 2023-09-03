@@ -96,8 +96,13 @@
     margin: 0 auto;
     display: block;
 }
-
-
-
-
-
+/* 爬虫信息 */
+.spider_info {
+    float: right;
+}
+.spider_stopped {
+    display: none;
+}
+.spider_running {
+    display: block;
+}

@@ -35,7 +35,8 @@ class DoubanBookSpider(scrapy.Spider):
             yield scrapy.Request(url, headers=HEADERS, callback=self.parse, meta=self.default_meta)
 
     def parse(self, response):
-        self.logger.info(f'\n=============URL: {response.request.url}=============\n')
+        if response and response.request:
+            self.logger.info(f'\n=============URL: {response.request.url}=============\n')
         node_list = response.css("tr.item")  # 获取本页每个书本的元素
         next_page = response.css("span.next a")  # 下一页
         for node in node_list:
