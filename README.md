@@ -7,7 +7,8 @@
       apt-get install libpq-dev
 ### 3. python依赖包，用根目录下requirement.txt安装python依赖
       pip install -r requirement.txt
-### 4. 需要安装redis
+### 4. 需要安装celery和redis
+      apt-get install celery
       apt-get install redis
 ## 二、 文件配置
 ### 1. 数据库设置
