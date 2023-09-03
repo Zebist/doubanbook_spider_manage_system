@@ -39,9 +39,16 @@
       1. 数据存在media文件夹中，正式环境可迁移对接到文件系统
       3. PostgreSQL管道： 将数据插入到PostgreSQL
 ## 3. 运行环境
-### 1. 在根目录运行python manage.py runserver 0.0.0.0:8080启动web服务
-### 2. 在根目录运行celery -A scrapy_management_system worker --loglevel=info启动Celery队列
-### 3. 使用IP访问页面，在首页可以看到【开始爬取】按钮，单击后即可启动爬虫
+### 1. 启动web服务
+      在根目录运行 
+      python manage.py runserver 0.0.0.0:8080
+### 2. 启动Celery队列
+      在根目录运行
+      celery -A scrapy_management_system worker --loglevel=info
+### 3. 启动爬虫
+      使用IP访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
+      也可在根目录运行
+      scrapy crawl douban_book
 #### 1. 页面默认每10秒刷新1次数据
 ## 3. 技术说明
       1. 使用Scrapy作为爬虫框架，通过请求头、代理切换，重定向文件识别，解决了目标网站的反爬
