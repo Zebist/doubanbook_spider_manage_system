@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'douban_books',
+    'spider_center',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +142,18 @@ MEDIA_URL = 'media/'  # 通过浏览器访问媒体文件的URL
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'douban_books.utils.custom_exception_handler'
+}
+
+# Celery 配置
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# 配置 Celery 相关选项
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 添加 Celery 配置
+CELERY_TIMEZONE = 'UTC'

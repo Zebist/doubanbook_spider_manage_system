@@ -79,7 +79,7 @@ ITEM_PIPELINES = {
     "crawl_douban_top250.pipelines.ImagePipeline": 200,  # 图片下载
     "crawl_douban_top250.pipelines.PostgreSQLPipeline": 300,  # 写入postgresql数据库
 }
-IMAGES_STORE = 'media/images/douban_books'
+IMAGES_STORE = 'media/'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
