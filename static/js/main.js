@@ -1,39 +1,83 @@
 var API_URL = '/api/';
 var DOUBAN_BOOK_URL = API_URL + 'douban_books/';
-var MEDIA_PATH = '/media/images/douban_books/';
+//var MEDIA_PATH = '/media/images/douban_books/';
 
 $(function () {
     var $table = $("#data_table");  // 获取表格
     var $table_ob = get_field_list($table);  // 获取接口提供的字段
     // 监听编辑按钮点击事件
-    $table.find("tbody").on("click",".edit-btn",function(){
+    $table.on("click",".edit-btn", function(event){
+        event.preventDefault();
         handle_edit($(this));
     });
     // 监听保存按钮点击事件
-    $table.find("tbody").on("click",".save-btn",function(){
-        handle_save($(this), $table);
+    $("#save").on("click", function(event){
+        add_record();
+    });
+    $('#addForm').on('submit', function(event) {
+        event.preventDefault(); // 阻止表单的默认提交行为
     });
 });
-// 获取数据列表
-//function get_data_list($table_ob) {
-//    $.ajax({
-//        "url": DOUBAN_BOOK_URL,
-//        "type": "GET",
-//        "error": function(xhr, status, error) {
-//            // 处理错误情况
-//            console.error("请求失败：" + error);
-//        },
-//        "success": function (response) {
-//            // 获取 data
-//            var data = [];
-//            $.each(response["results"], function(index, element) {
-//                data.push(element);
-//            });
-//            $table_ob.clear().draw();
-//        }
-//
-//    });
-//}
+
+function get_tip_message(msg_list) {
+// 获取提示信息
+    let tip_message = ''
+    $.each(msg_list, function(key, value) {
+        tip_message += value + '\n';
+    });
+    return tip_message
+}
+
+function create_post_params() {
+// 构造POST请求参数
+    var author = $("#author").val();
+    var publisher = $("#publisher").val();
+    var publish_date = $("#publish_date").val();
+    var price = $("#price").val();
+
+    var form_data = new FormData();
+    var files = $("#cover_path").prop("files");
+    var file = files.length > 0 ? files[0] : null;
+    console.log(file);
+    form_data.append('title', $("#title").val());
+    form_data.append('title_2', $("#title_2").val());
+    form_data.append('douban_id', $("#douban_id").val());
+    form_data.append('cover_path', file);
+    form_data.append('book_url', $("#book_url").val());
+    form_data.append('base_info', [author, publisher, publish_date, price].join("/"));
+    form_data.append('author', $("#author").val());
+    form_data.append('publisher', $("#publisher").val());
+    form_data.append('publish_date', $("#publish_date").val());
+    form_data.append('price', $("#price").val());
+    form_data.append('rating', $("#rating").val());
+    form_data.append('review_count', $("#review_count").val());
+    form_data.append('summary', $("#summary").val());
+    form_data.append('is_readability', $("#is_readability").val());
+    return form_data
+}
+
+function add_record() {
+// 向服务器发起POST请求，添加记录
+    $.ajax({
+      url: DOUBAN_BOOK_URL, // 替换为你的API端点URL
+      type: 'POST', // 请求类型为POST
+      data: create_post_params(),
+      processData: false,
+      contentType: false,
+      success: function (data, textStatus, jqXHR) {
+        // 请求成功时的处理逻辑
+        if (jqXHR.status == 201)
+            alert('提交成功');
+        else
+            alert(get_tip_message(data));
+      },
+      error: function (xhr, status, error) {
+        // 异常时的处理逻辑
+        alert('服务异常，请稍候再试！');
+        console.error('异常：', error);
+      }
+    });
+}
 
 // 图片字段处理
 function handle_img_field(ob) {
@@ -42,7 +86,8 @@ function handle_img_field(ob) {
         // 按数据类型返回不同的内容
         if (type === "display") {
             // 在显示模式下，返回包含图像的<img>标签
-            return '<a target="_blank" href=' + row['book_url'] + '><img src="' + MEDIA_PATH + data + '" width="100" height="130"></a>';
+//            console.log(MEDIA_PATH, data);
+            return '<a target="_blank" href=' + row['book_url'] + '><img src="' + data + '" width="100" height="130"></a>';
         }
         // 其他模式返回原始数据
         return data;
@@ -141,10 +186,11 @@ function update_table($table, field_list, data) {
         ajax: function (data, callback, settings) {
             //封装请求参数
             param = create_req_params(data);
+            console.log(data);
             //请求数据
             $.ajax({
                 type: "GET",
-                url: "/api/douban_books/",  // API地址
+                url: DOUBAN_BOOK_URL,  // API地址
                 cache: false,  //禁用缓存
                 data: param,  //传入组装的参数
                 dataType: "json",
@@ -193,10 +239,15 @@ function update_table($table, field_list, data) {
                 searchable: false // 不可搜索
             },
             {
-                targets: [7], // 书籍链接列设置
+                targets: [8], // 书籍链接列设置
                 visible: false, // 不在表格中显示
                 searchable: false // 不可搜索
-            }
+            },
+            {
+                targets: [3], // 豆瓣ID列设置
+                visible: false, // 不在表格中显示
+                searchable: false // 不可搜索
+            },
         ]
     });
 }
@@ -225,8 +276,7 @@ function handle_edit(node) {
 }
 
 // 处理保存
-function handle_save(node, $table_ob) {
-    alert("保存成功");
+function handle_save2(node, $table_ob) {
     var row = $table_ob.row(node.parents("tr"));
     var tds = node.parents("tr").children();
     $.each(tds, function(i,val){

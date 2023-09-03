@@ -27,6 +27,65 @@
     <table id="data_table" class="table table-striped table-bordered" style="width:100%"></table>
 </main>
 <footer>
+    <div class="border-top"></div>
+    <div class="container mt-5">
+        <h2>添加新数据</h2>
+        <form id="addForm">
+            <div class="form-group">
+                <label for="title">书名</label>
+                <input type="text" class="form-control" id="title" placeholder="输入标题" required>
+            </div>
+            <div class="form-check form-check-inline">
+                <label for="is_readability">可试读</label>
+                <input type="checkbox" class="form-control" id="is_readability" placeholder="选择是否可试读">
+            </div>
+            <div class="form-group">
+                <label for="douban_id">豆瓣书籍 ID</label>
+                <input type="text" class="form-control" id="douban_id" placeholder="输入豆瓣ID" required>
+            </div>
+            <div class="form-group">
+                <label for="title_2">副标题</label>
+                <input type="text" class="form-control" id="title_2" placeholder="输入副标题">
+            </div>
+            <div class="form-group">
+                <label for="cover_path">封面</label>
+                <input type="file" class="form-control" id="cover_path" placeholder="选择封面">
+            </div>
+            <div class="form-group">
+                <label for="book_url">链接</label>
+                <input type="url" class="form-control" id="book_url" placeholder="输入URL">
+            </div>
+            <div class="form-group">
+                <label for="author">作者</label>
+                <input type="text" class="form-control" id="author" placeholder="输入作者">
+            </div>
+            <div class="form-group">
+                <label for="publisher">出版商</label>
+                <input type="text" class="form-control" id="publisher" placeholder="输入出版商">
+            </div>
+            <div class="form-group">
+                <label for="publish_date">日期</label>
+                <input type="date" class="form-control" id="publish_date" placeholder="输入日期">
+            </div>
+            <div class="form-group">
+                <label for="price">价格</label>
+                <input type="number" class="form-control" id="price" placeholder="输入价格">
+            </div>
+            <div class="form-group">
+                <label for="rating">评分</label>
+                <input type="number" class="form-control" id="rating" min="1" max="10" placeholder="输入评分">
+            </div>
+            <div class="form-group">
+                <label for="review_count">评论人数</label>
+                <input type="number" class="form-control" id="review_count" placeholder="输入评论人数">
+            </div>
+            <div class="form-group">
+                <label for="summary">简介</label>
+                <input type="text" class="form-control" id="summary" placeholder="输入简介">
+            </div>
+            <button type="submit" id="save" class="btn btn-primary">添加</button>
+        </form>
+    </div>
 
 </footer>
 
