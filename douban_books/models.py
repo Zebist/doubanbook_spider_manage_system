@@ -8,7 +8,7 @@ class DoubanBooks(models.Model):
     title = models.CharField(max_length=255, verbose_name="书名", null=False, blank=False)
     douban_id = models.CharField(max_length=255, verbose_name="豆瓣ID", null=False, blank=False, unique=True)
     title_2 = models.CharField(max_length=255, verbose_name="辅助书名", null=True)
-    cover_path = models.CharField(max_length=255, verbose_name="图片路径", null=True)
+    cover_path = models.CharField(max_length=255, verbose_name="封面", null=True)
     book_url = models.CharField(max_length=255, verbose_name="书籍链接", null=True)
     base_info = models.CharField(max_length=255, verbose_name="基本", null=True)
     author = models.CharField(max_length=255, verbose_name="作者", null=True)
@@ -32,3 +32,4 @@ class DoubanBookCrawlRecord(models.Model):
     """
     url = models.CharField(max_length=255, unique=True, null=False, blank=False)
     is_ok = models.BooleanField(default=False)
+

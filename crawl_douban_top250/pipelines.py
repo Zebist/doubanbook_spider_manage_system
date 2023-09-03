@@ -27,6 +27,9 @@ db_info_config.read('db_info.ini')
 
 
 class PostgreSQLPipeline(object):
+    """
+    PostgresSQL数据库管道
+    """
     def __init__(self, db_params):
         # 初始化信息
         self.db_params = db_params
@@ -176,7 +179,9 @@ class PostgreSQLPipeline(object):
 
 
 class ImagePipeline(ImagesPipeline):
-    # 图片管道
+    """
+    图片管道
+    """
     def __init__(self, *args, **kwargs):
         super(ImagePipeline, self).__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
