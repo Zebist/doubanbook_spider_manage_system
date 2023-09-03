@@ -2,7 +2,7 @@
 ## 用于爬取DOUBAN图书 TOP250列表
 ## 1. 环境安装
 ### 1. Python版本： 3.10.12   
-### 2. 依赖包，请用根目录下requirement.txt安装python依赖
+### 2. 依赖包，用根目录下requirement.txt安装python依赖
       pip install -r requirement.txt
 ### 3. 需要安装redis
       apt-get install redis
