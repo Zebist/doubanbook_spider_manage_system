@@ -136,8 +136,6 @@ class ProxyMiddleware(RetryMiddleware):
         # 处理响应时，检查是否需要切换代理并重新请求
         # 当前仅top250页面需要作重定向处理，其他页面可根据后续需要调整
         if 'top250' in request.url:
-            with open(f'temp/response.html', 'w') as f:
-                f.write(response.text)
             is_redirect = self.check_is_redirect(response)
             # 遇到302响应时（包括js脚本跳转）切换代理并重新请求
             if is_redirect:
