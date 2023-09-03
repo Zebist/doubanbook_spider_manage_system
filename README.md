@@ -2,15 +2,13 @@
 ## 用于爬取DOUBAN图书 TOP250列表
 ## 一、 环境安装
 ### 1. Python版本： 3.10.12   
-### 2. 依赖包，用根目录下requirement.txt安装python依赖
+### 2. 安装postgresql数据库，并创建数据库
+### 3. 安装依赖
+      apt-get install libpq-dev
+### 3. python依赖包，用根目录下requirement.txt安装python依赖
       pip install -r requirement.txt
-### 3. 需要安装redis
+### 4. 需要安装redis
       apt-get install redis
-       
-### 4. 安装postgresql数据库，并创建数据库
-### 5. 在根目录下执行迁移
-      python manage.py makemigrations
-      python manage.py migrate
 ## 二、 文件配置
 ### 1. 数据库设置
 #### a. 在根目录的db_info.ini文件中设置数据库信息，参考如下
@@ -38,14 +36,17 @@
       2. 图片管道：用于下载图片
             i. 数据存在media文件夹中，正式环境可迁移对接到文件系统
       3. PostgreSQL管道： 将数据插入到PostgreSQL
-## 三、 运行环境
-### 1. 启动web服务
+## 三、 运行项目
+### 1. 在根目录下执行迁移
+      python manage.py makemigrations
+      python manage.py migrate
+### 2. 启动web服务
       在根目录运行 
       python manage.py runserver 0.0.0.0:8080
-### 2. 启动Celery队列
+### 3. 启动Celery队列
       在根目录运行
       celery -A scrapy_management_system worker --loglevel=info
-### 3. 启动爬虫
+### 4. 启动爬虫
       使用IP访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
       也可在根目录运行
       scrapy crawl douban_book
