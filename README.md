@@ -4,7 +4,7 @@
 ### 1. Python版本： 3.10.12   
 ### 2. 依赖包，请用根目录下requirement.txt安装python依赖
       pip install -r requirement.txt
-### 3. 需要安装redis，以配合celery使用
+### 3. 需要安装redis
       apt-get install redis
        
 ### 4. 安装postgresql数据库，并创建数据库
