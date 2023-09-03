@@ -47,7 +47,7 @@
 ### 3. 启动Celery队列
       在根目录运行
       celery -A scrapy_management_system worker --loglevel=info
-### 4. 启动爬虫
+### 4. 启动爬虫（注意:默认启用了代理中间件，会请求代理池，如果爬取不到数据请尝试更换代理池或关闭中间件）
       使用IP访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
       也可在根目录运行
       scrapy crawl douban_book
