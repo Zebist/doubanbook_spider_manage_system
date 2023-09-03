@@ -23,7 +23,7 @@
 ### 2. 爬虫设置
       在scrapy_manage_system/crawl_douban_top250/目录下的settings.py进行设置
 #### 1. 两个可用的中间件（默认已开启，下述顺序为执行顺序）
-##### 1.  代理中间件ProxyMiddleware（继承自RetryMiddleware）
+#### 1.  代理中间件ProxyMiddleware（继承自RetryMiddleware）
       1. 实现了自动识别重定向和代理切换
       2. 代理可重复使用，直至无法连接或被禁用
       3. 如需切换其他代理，在settings.py文件中设置PROXY_URL，中间件会从该URL获取代理池
