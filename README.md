@@ -55,6 +55,15 @@
       2. 使用Django、DRF作为后端，使用视图集实现CRUD
       3. 使用JQ、Bootstrap及Datatables插件搭建了前端页面
 ## 五、 功能说明
-      
+### 1. 爬虫按钮
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/ac856e6f-0ea1-4d09-8d35-ecfa027ed234)
+### 2. CRUD
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/1b1e3749-1cd0-41e2-9d93-20fcc3ea66bd)
+### 可以在页面底部添加数据，豆瓣书籍ID和书名、图片是必填字段（由于爬取时可以获取到ID，所以选择书籍ID进行去重）
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/25236ca7-836f-4ee8-b6d7-5a231639cd12)
+### 3. 其他： 页面支持搜索、排序、分页
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/e901c385-fd39-43da-b564-9d50e308b5e9)
+
+
         
        
