@@ -191,17 +191,24 @@ class ProxyMiddleware(RetryMiddleware):
             pn = ProxyNode(proxy_ob['ip'], proxy_ob['port'], self.max_use_count)
             self.proxy_list.append(pn)
 
+    def req_new_proxy(self, proxy_url):
+        # 向代理池发起请求，获取新代理，更换代理池时，可以重写此处函数
+        # 期望的json格式： {'code': 1, 'info': '获取成功', 'data': [{'ip': 0.0.0.0, 'port': 8080}]}
+        # 满足此格式即可对接后续功能
+        response = requests.get(proxy_url)
+        json_data = response.json()
+        return json_data
+
     def refresh_proxy_list(self, proxy_url):
         # 当无可用代理时，刷新代理列表
         if not self.proxy_list:
-            response = requests.get(proxy_url)
-            json_data = response.json()
+            json_data = self.req_new_proxy(proxy_url)
             try:
                 if json_data['code'] == 1:
                     self.extend_proxy_list(json_data)
                 else:
                     self.logger.warning(
-                        f'Can not to retrieve proxy data. Status code: {response.status_code}, data: {json_data}')
+                        f'Can not to retrieve proxy data. data: {json_data}')
             except requests.exceptions.RequestException as e:
                 self.logger.error(f'An error occurred during the request of proxy: {e}')
             except AttributeError as e:
@@ -254,7 +261,7 @@ class ProxyMiddleware(RetryMiddleware):
                 self.update_proxy(request)  # 更新代理
 
 
-class CrawlRecordMiddleware(RetryMiddleware):
+class CrawlRecordMiddleware(object):
     # 爬取记录中间件，用来记录url的爬取结果
     def __init__(self, *args, **kwargs):
         super(CrawlRecordMiddleware, self).__init__(*args, **kwargs)
