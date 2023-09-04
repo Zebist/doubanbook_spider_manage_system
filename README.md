@@ -1,4 +1,4 @@
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/94076116-98b0-4aa7-9aa7-829cb80eb6be)# scrapy_manage_system 爬虫管理系统
+# scrapy_manage_system 爬虫管理系统
 ## 用于爬取DOUBAN图书 TOP250列表
 ## 一、 环境安装
 ### 1. Python版本： 3.10.12   
