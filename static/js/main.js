@@ -3,6 +3,7 @@ var DOUBAN_BOOK_URL = API_URL + 'douban_books/';
 var DEFAULT_TIMEZONE = "Asia/Shanghai";
 var NEED_DELETE_ID = null;
 var REFRESH_TIME = 10000;  // 每10秒刷新
+var REFRESH_TIMER = null;
 
 $(function () {
     var $table = $("#data_table");  // 获取表格
@@ -263,17 +264,24 @@ function update_table($table, field_list, data) {
         ]
     });
     // 每分钟刷新一次页面
-    setInterval(function() {
+    REFRESH_TIMER = setInterval(function() {
         $data_table.ajax.reload(null, false);
     }, REFRESH_TIME);
 
     // 监听编辑按钮点击事件
     $table.on("click",".edit-btn", function(event){
+        // 编辑的时候暂停定时器，防止刷新影响用户操作
+        clearInterval(REFRESH_TIMER);
         handle_edit($(this), $data_table);
     });
     // 监听保存按钮事件
     $table.on("click",".save-btn", function(event) {
+        // 保存的时候重启定时器
         handle_save($(this), $data_table);
+        clearInterval(REFRESH_TIMER);
+        REFRESH_TIMER = setInterval(function() {
+            $data_table.ajax.reload(null, false);
+        }, REFRESH_TIME);
     });
     // 监听删除按钮事件,弹出确认框
     $table.on("click",".del-btn", function(event) {
@@ -291,6 +299,11 @@ function update_table($table, field_list, data) {
 
     // 当用户点击确认时,执行删除
     $("#confirmButton").click(function(e) {
+        // 删除的时候重启定时器
+        clearInterval(REFRESH_TIMER);
+        REFRESH_TIMER = setInterval(function() {
+            $data_table.ajax.reload(null, false);
+        }, REFRESH_TIME);
         handle_del($data_table);
       $("#confirmationModal").modal("hide");
     });

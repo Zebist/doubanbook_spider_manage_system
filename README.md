@@ -1,16 +1,14 @@
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/94076116-98b0-4aa7-9aa7-829cb80eb6be)# scrapy_manage_system 爬虫管理系统
 ## 用于爬取DOUBAN图书 TOP250列表
 ## 一、 环境安装
 ### 1. Python版本： 3.10.12   
-### 2. 依赖包，用根目录下requirement.txt安装python依赖
+### 2. 安装postgresql数据库，并创建数据库
+### 3. 安装依赖
+      apt-get install libpq-dev
+### 3. python依赖包，用根目录下requirement.txt安装python依赖
       pip install -r requirement.txt
-### 3. 需要安装redis
+### 4. 需要安装celery和redis
+      apt-get install celery
       apt-get install redis
-       
-### 4. 安装postgresql数据库，并创建数据库
-### 5. 在根目录下执行迁移
-      python manage.py makemigrations
-      python manage.py migrate
 ## 二、 文件配置
 ### 1. 数据库设置
 #### a. 在根目录的db_info.ini文件中设置数据库信息，参考如下
@@ -38,14 +36,17 @@
       2. 图片管道：用于下载图片
             i. 数据存在media文件夹中，正式环境可迁移对接到文件系统
       3. PostgreSQL管道： 将数据插入到PostgreSQL
-## 三、 运行环境
-### 1. 启动web服务
+## 三、 运行项目
+### 1. 在根目录下执行迁移
+      python manage.py makemigrations
+      python manage.py migrate
+### 2. 启动web服务
       在根目录运行 
       python manage.py runserver 0.0.0.0:8080
-### 2. 启动Celery队列
+### 3. 启动Celery队列
       在根目录运行
       celery -A scrapy_management_system worker --loglevel=info
-### 3. 启动爬虫
+### 4. 启动爬虫（注意:默认启用了代理中间件，会请求代理池，如果爬取不到数据请尝试更换代理池或关闭中间件）
       使用IP访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
       也可在根目录运行
       scrapy crawl douban_book
@@ -55,6 +56,20 @@
       2. 使用Django、DRF作为后端，使用视图集实现CRUD
       3. 使用JQ、Bootstrap及Datatables插件搭建了前端页面
 ## 五、 功能说明
-      
+### 1. 爬虫按钮
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/5399a4c1-a2cd-4970-8d0f-18e348a7ddfe)
+
+### 2. CRUD
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/3ad02f6e-a427-486d-a4d3-aa9b112a7244)
+
+### 可以在页面底部添加数据，豆瓣书籍ID和书名、图片是必填字段（由于爬取时可以获取到ID，所以选择书籍ID进行去重）
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/4419699f-cc55-4517-b294-b568a22120cd)
+
+### 3. 其他： 页面支持搜索、排序、分页
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/e062086e-7ecd-44c9-a024-9f9db5b25061)
+![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/3be3144b-52eb-4347-bcca-1e7f6cddfed6)
+
+
+
         
        
