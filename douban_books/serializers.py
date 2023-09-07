@@ -49,10 +49,3 @@ class DoubanBookSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"评分必须在1～10之间，请重新输入！")
 
         return value
-
-    # def validate_douban_id(self, value):
-    #     # 验证字段唯一性
-    #     if DoubanBooks.objects.filter(douban_id=value).exists():
-    #         raise serializers.ValidationError(f"豆瓣ID： {value} 已存在，请重新输入！")
-    #
-    #     return value
