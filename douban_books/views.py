@@ -38,39 +38,37 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             # 创建记录
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                headers = self.get_success_headers(serializer.data)
-                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-            else:
-                errors = serializer.errors
-                return Response(errors, status=status.HTTP_200_OK)
+            return super().create(request, *args, **kwargs)
         except IntegrityError as e:
             if 'unique' in str(e) and 'douban_id' in str(e):
                 # 提取唯一键信息，这里假设键名为 'douban_id'
-                return Response({"data": f"豆瓣书籍ID重复,请重新输入"}, status=status.HTTP_200_OK)
-            return self.raise_unexpected_message(e)
-        except Exception as e:
-            # 异常处理
-            return self.raise_unexpected_message(e)
+                errors_msg = self.get_error_msg(f"豆瓣书籍ID重复,请重新输入")
+                return Response(errors_msg, status=status.HTTP_200_OK)
+            raise IntegrityError(e)
 
     def partial_update(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            return Response({'status': 'success', 'message': '更新成功'}, status=status.HTTP_200_OK)
-        except ValidationError as e:
-            # 验证异常处理
-            return Response(serializer.errors, status=status.HTTP_200_OK)
-        except Exception as e:
-            # 其他异常处理
-            return self.raise_unexpected_message(e)
+            return super().partial_update(request, *args, **kwargs)
+        except DoubanBooks.DoesNotExist:
+            # 对象不存在
+            errors_msg = self.get_error_msg('对象不存在')
+            return Response(errors_msg, status=status.HTTP_404_NOT_FOUND)
 
-    def raise_unexpected_message(self, e):
-        # 处理其他错误，记录日志
-        logger.error(f"Got a unexpected error: {e}")
-        return Response({'status': 'error', 'message': 'An integrity error occurred.'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def get_error_msg(self, msg, many=False):
+        e_msg = {
+            'code': 'error',
+        }
+        if many:
+            e_msg.update({'errors': msg})
+        else:
+            e_msg.update({'error': msg})
+
+        return e_msg
+
+    def handle_exception(self, exc):
+        if isinstance(exc, ValidationError):
+            # 捕获ValidationError,构造自定义错误响应
+            error_msg = self.get_error_msg(exc.detail, many=True)
+            return Response(error_msg, status=status.HTTP_200_OK)
+        
+        return super().handle_exception(exc)

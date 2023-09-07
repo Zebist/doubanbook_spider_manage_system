@@ -9,10 +9,6 @@ $(function () {
     var $table = $("#data_table");  // 获取表格
     get_field_list($table);  // 获取接口提供的字段
 
-    $('#addForm').on('submit', function(event) {
-        event.preventDefault(); // 阻止表单的默认提交行为
-    });
-
     $("#start_spider_btn").click(function(e) {
         start_spider();
     });
@@ -23,13 +19,17 @@ $(function () {
     });
 });
 
-function get_tip_message(msg_list) {
 // 获取提示信息
-    let tip_message = ''
-    $.each(msg_list, function(key, value) {
-        tip_message += value + '\n';
-    });
-    return tip_message
+function get_tip_message(data) {
+    if (data.error) {
+        return data.error
+    } else {
+        let tip_message = '';
+        $.each(data.errors, function(key, value) {
+            tip_message += value + '\n';
+        });
+        return tip_message
+    }
 }
 
 function create_post_params() {
@@ -68,15 +68,14 @@ function add_record($data_table) {
       contentType: false,
       success: function (data, textStatus, jqXHR) {
         // 请求成功时的处理逻辑
-        if (jqXHR.status == 201) {
+        if (jqXHR.status == 201) {  // 提交成功
             alert('提交成功');
-//            $data_table.draw();
-            $data_table.ajax.reload(null, false);
+        } else if (data.code == "error") {  // error: 验证不通过
+            alert(get_tip_message(data));  // 构造提示信息
         }
-        else
-            alert(get_tip_message(data));
+        $data_table.ajax.reload(null, false);
       },
-      error: function (xhr, status, error) {
+      error: function (error) {
         // 异常时的处理逻辑
         alert('服务异常，请稍候再试！');
         console.error('异常：', error);
@@ -274,7 +273,7 @@ function update_table($table, field_list, data) {
         clearInterval(REFRESH_TIMER);
         handle_edit($(this), $data_table);
     });
-    // 监听保存按钮事件
+    // 监听编辑时的保存按钮事件
     $table.on("click",".save-btn", function(event) {
         // 保存的时候重启定时器
         handle_save($(this), $data_table);
@@ -308,8 +307,13 @@ function update_table($table, field_list, data) {
       $("#confirmationModal").modal("hide");
     });
     // 监听保存按钮点击事件
-    $("#save").on("click", function(event){
-        add_record($data_table);
+//    $("#save").on("click", function(event){
+//        add_record($data_table);
+//    });
+
+    $('#addForm').on('submit', function(event) {
+       event.preventDefault(); // 阻止表单的默认提交行为
+       add_record($data_table);
     });
 }
 
@@ -414,22 +418,16 @@ function handle_save(node, $data_table) {
            type: 'PATCH',
            "success":function(data, textStatus, jqXHR){
                 console.log(data, textStatus, jqXHR);
-                if (data.status == 'success'){
+                if (data.id){
                     alert("更新成功!");
-                    $data_table.ajax.reload(null, false);
+                } else if (data.code == "error") {  // error: 验证不通过
+                     alert(get_tip_message(data));  // 构造提示信息
                 }
-                else{
-                    let msg_list = [];
-                    $.each(data, function(field, msg) {
-                        msg_list.push(field + " " + msg);
-                    });
-                    alert(msg_list);
-                    console.log(msg_list);
-                    $data_table.ajax.reload(null, false);
-                }
+                $data_table.ajax.reload(null, false);
            },
-           "error": function(){
+           "error": function(e){
                 alert("服务异常，请稍后重试");
+                console.log(e);
                 $data_table.ajax.reload(null, false);
            }
        });
@@ -453,8 +451,9 @@ function handle_del($data_table) {
                 }
                 $data_table.ajax.reload(null, false);
            },
-           "error": function(){
+           "error": function(e){
                 alert("服务异常，请稍后重试");
+                console.log(e);
                 $data_table.ajax.reload(null, false);
            }
        });
