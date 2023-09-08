@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'scrapy_management_system.urls'
@@ -153,3 +154,13 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # 添加 Celery 配置
 CELERY_TIMEZONE = 'UTC'
+
+# 跨域配置
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
+# 允许的前端应用的地址
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",  
+    "http://192.168.207.129:8080",  
+]
