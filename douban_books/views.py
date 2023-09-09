@@ -10,7 +10,7 @@ from django.db import IntegrityError
 
 from .models import DoubanBooks
 from .serializers import DoubanBookSerializer
-from .pagination import GenericPagination
+from .pagination import GenericPagination, MAX_PAGE_SIZE
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
     serializer_class = DoubanBookSerializer  # 序列化器
     pagination_class = GenericPagination  # 分页器
     ordering_fields = '__all__'  # 排序字段
+    ordering = 'id'
     search_fields = ['title', 'title_2', 'author', 'publisher']  # 搜索字段
     filter_backends = [OrderingFilter, SearchFilter]  # 过滤器
 
@@ -53,6 +54,12 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
             # 对象不存在
             errors_msg = self.get_error_msg('对象不存在')
             return Response(errors_msg, status=status.HTTP_404_NOT_FOUND)
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data['max_size'] = MAX_PAGE_SIZE  # 每页最大数量
+
+        return response
 
     def get_error_msg(self, msg, many=False):
         e_msg = {

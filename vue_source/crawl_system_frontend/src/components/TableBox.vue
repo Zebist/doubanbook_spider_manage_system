@@ -1,35 +1,24 @@
 <template>
     <div class="table-box">
         <vxe-toolbar>
-        <template #buttons>
-            <vxe-button @click="allAlign = 'left'">居左</vxe-button>
-            <vxe-button @click="allAlign = 'center'">居中</vxe-button>
-            <vxe-button @click="allAlign = 'right'">居右</vxe-button>
-        </template>
+            <template #buttons>
+                <vxe-input v-model="formData.searchContent" type="search" placeholder="全表搜索" @keyup="searchEvent1"></vxe-input>
+            </template>
         </vxe-toolbar>
 
-        <vxe-table
-            border
-            :align="allAlign"
-            :data="tableData"
-            :columns="columns"
+        <vxe-grid
+            ref="xGrid" 
+            v-bind="gridOptions"
         >
-            <vxe-column
-                v-for="column in columns"
-                :key="column.field"
-                :field="column.field"
-                :title="column.title"
-                :cell-render="column.cell_render"
-                :formatter="column.formatter"
-            ></vxe-column>
-        </vxe-table>
+        </vxe-grid>
          <!-- 分页 -->
-        <vxe-pager 
+        <!-- <vxe-pager 
             :total="total" 
             :currentPage.sync="currentPage" 
             :pageSize.sync="pageSize"
             :pageSizes="pageSizes"
-        ></vxe-pager>
+            @page-change="handlePageChange"
+        ></vxe-pager> -->
 
     </div>
 </template>
@@ -49,23 +38,41 @@ VXETable.renderer.add('renderCoverPath', {
 export default {
     data () {
         return {
-            allAlign: 'center',
-            columns: [],
-            tableData: [],
-            total: 0, // 数据总数
             default_timezone: "Asia/Shanghai",  // 默认时间戳
-            currentPage: 1, // 当前页码
-            pageSize: 10, // 每页显示的记录数
-            pageSizes: [10, 20, 50]
+            formData: {
+                searchContent: ''
+            },
+            gridOptions: {
+                border: true,
+                resizable: true,
+                align: 'left',
+                columns: [],
+                sortConfig: {
+                  trigger: 'cell',
+                  remote: true
+                },
+                pagerConfig: {
+                    pageSizes: [10, 20, 50, 100, 200],  // 留意limitPageSizes函数，超过maxPageSize的会被过滤掉
+                    maxPageSize: 10,
+                },
+                proxyConfig: {
+                    sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
+                    props: {
+                        result: 'data.results',
+                        total: 'data.count'
+                    },
+                    ajax: {
+                        query: ({page, sorts}) => {
+                            return this.fetchData(page, sorts);
+                        }
+                    }
+                },
+            },
         }
     },
-    // watch: {
-    //     currentPage: 'fetchData', // 当 currentPage 改变时触发 fetchData 方法
-    //     pageSize: 'fetchData', // 当 pageSize 改变时触发 fetchData 方法
-    // },
-    mounted () {
+    mounted() {
         this.refreshField();
-        this.fetchData();
+        // this.fetchData();
     },
     methods: {
         getCellRender(key) {
@@ -96,14 +103,18 @@ export default {
             // 处理字段，生成字段信息info
             let columns = [];
             let columns_ob = response.data.actions.POST;
+            const no_show_fileds = ['id', 'douban_id'];
             for (const key in columns_ob) {
-                let info = {
-                    'field': key,
-                    'title': columns_ob[key].label,
-                    'cell_render': this.getCellRender(key),
-                    'formatter': this.getFormatter(key),
-                };
-                columns.push(info);
+                if (no_show_fileds.indexOf(key) == -1 ) {
+                    let info = {
+                        'field': key,
+                        'title': columns_ob[key].label,
+                        'cellRender': this.getCellRender(key),
+                        'formatter': this.getFormatter(key),
+                        'sortable': true,
+                    };
+                    columns.push(info);
+                }
             }
             
             return columns;
@@ -114,27 +125,48 @@ export default {
                 .then(response => {
                         // 请求成功处理逻辑
                         let columns = this.handleColumns(response);
-                        this.columns = columns;
+                        this.gridOptions.columns = columns;
                     })
                 .catch(error => {
                     // 请求失败处理逻辑
                     console.error(error);
                 });
         },
-        fetchData() {
+        getOrdering(sorts) {
+            const formattedFields = sorts.map(obj => (obj.order === 'desc' ? `-${obj.field}` : obj.field));
+            // 使用 join 方法将字段拼接成逗号分隔的字符串
+            return formattedFields.join(',');
+        },
+        fetchData(page, sorts) {
             // 发起服务端请求，获取数据
-            this.$axios.get("api/douban_books/")
-                .then(response => {
-                        // 请求成功处理逻辑
-                        let data = response.data;
-                        // 更新 this.tableData 和 this.total
-                        this.tableData = data.results;
-                        this.total = data.count;
-                    })
-                .catch(error => {
-                    // 请求失败处理逻辑
-                    console.error(error);
-                });
+            return this.$axios.get("api/douban_books/", {
+                'params': {
+                    page: page.currentPage,
+                    size: page.pageSize,
+                    ordering: this.getOrdering(sorts),
+                    search: this.formData.searchContent,
+                }
+            })
+            .then(response => {
+                this.limitPageSizes(response);
+                return response;
+            })
+            .catch(error => {
+                console.error(error);
+                return error;
+            });
+        },
+        limitPageSizes(response) {
+            // 限制每页条目数不超过最大条目数
+            let pagerConfig = this.gridOptions.pagerConfig;
+            pagerConfig.maxPageSize = response.data.max_size;
+            pagerConfig.pageSizes = pagerConfig.pageSizes.filter(item => item <= pagerConfig.maxPageSize);
+            return response;
+        },
+        searchEvent1() {
+            // 搜索
+            const $grid = this.$refs.xGrid;
+            $grid.commitProxy('query');
         }
     }
 }
