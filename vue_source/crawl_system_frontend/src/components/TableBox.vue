@@ -10,15 +10,16 @@
             ref="xGrid" 
             v-bind="gridOptions"
         >
+        <template #operate="{ row }">
+            <template v-if="$refs.xGrid.isActiveByRow(row)">
+              <el-button type="success" @click="saveRowEvent(row)">保存</el-button>
+            </template>
+            <template v-else>
+              <el-button type="primary" @click="editRowEvent(row)">编辑</el-button>
+            </template>
+            <el-button type="danger" @click="removeRowEvent(row)">删除</el-button>
+          </template>
         </vxe-grid>
-         <!-- 分页 -->
-        <!-- <vxe-pager 
-            :total="total" 
-            :currentPage.sync="currentPage" 
-            :pageSize.sync="pageSize"
-            :pageSizes="pageSizes"
-            @page-change="handlePageChange"
-        ></vxe-pager> -->
 
     </div>
 </template>
@@ -42,19 +43,37 @@ export default {
             formData: {
                 searchContent: ''
             },
+            seqColumn: [],
             gridOptions: {
                 border: true,
                 resizable: true,
                 align: 'left',
-                columns: [],
+                loading: false,
+                keepSource: true,
+                showOverflow: true,
                 sortConfig: {
                   trigger: 'cell',
                   remote: true
                 },
                 pagerConfig: {
+                    total: 0,
+                    currentPage: 1,
+                    pageSize: 10,
                     pageSizes: [10, 20, 50, 100, 200],  // 留意limitPageSizes函数，超过maxPageSize的会被过滤掉
                     maxPageSize: 10,
                 },
+                editConfig: {
+                    // 设置触发编辑为手动模式
+                    trigger: 'manual',
+                    // 设置为整行编辑模式
+                    mode: 'row',
+                    // 显示修改状态和新增状态
+                    showStatus: true,
+                    // 自定义可编辑列头的图标
+                    icon: 'vxe-icon-question-circle-fill'
+                },
+                columns: [{ title: '操作', width: 180, slots: { default: 'operate' } }],
+                data: [],
                 proxyConfig: {
                     sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
                     props: {
@@ -70,7 +89,7 @@ export default {
             },
         }
     },
-    mounted() {
+    created() {
         this.refreshField();
         // this.fetchData();
     },
@@ -81,7 +100,7 @@ export default {
                 // 处理字段render
                 return {'name': 'renderCoverPath'};
             }
-            return null;
+            return {};
         },
         getFormatter(key) {
             // 获取格式化信息
@@ -110,6 +129,7 @@ export default {
                         'field': key,
                         'title': columns_ob[key].label,
                         'cellRender': this.getCellRender(key),
+                        'editRender': {},
                         'formatter': this.getFormatter(key),
                         'sortable': true,
                     };
@@ -125,7 +145,7 @@ export default {
                 .then(response => {
                         // 请求成功处理逻辑
                         let columns = this.handleColumns(response);
-                        this.gridOptions.columns = columns;
+                        this.gridOptions.columns = [...this.seqColumn, ...columns, ...this.gridOptions.columns];
                     })
                 .catch(error => {
                     // 请求失败处理逻辑
@@ -167,6 +187,30 @@ export default {
             // 搜索
             const $grid = this.$refs.xGrid;
             $grid.commitProxy('query');
+        },
+        editRowEvent (row) {
+            // 单击编辑按钮
+            const $grid = this.$refs.xGrid;
+            $grid.setActiveRow(row);
+        },
+        saveRowEvent () {
+            // 单击保存按钮
+            const $grid = this.$refs.xGrid;
+            $grid.clearActived().then(() => {
+                this.gridOptions.loading = true;
+                setTimeout(() => {
+                        this.gridOptions.loading = false;
+                        VXETable.modal.message({ content: '保存成功！', status: 'success' });
+                    }, 300)
+                });
+        },
+        async removeRowEvent (row) {
+            // 单击删除按钮
+            const type = await VXETable.modal.confirm('您确定要删除该数据?');
+            const $grid = this.$refs.xGrid;
+            if (type === 'confirm') {
+                $grid.remove(row);
+            }
         }
     }
 }
