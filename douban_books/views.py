@@ -36,6 +36,10 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'title_2', 'author', 'publisher']  # 搜索字段
     filter_backends = [OrderingFilter, SearchFilter]  # 过滤器
 
+    def update(self, request, *args, **kwargs):
+        print(request.data)
+        return super().update(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         try:
             # 创建记录
@@ -44,7 +48,7 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
             if 'unique' in str(e) and 'douban_id' in str(e):
                 # 提取唯一键信息，这里假设键名为 'douban_id'
                 errors_msg = self.get_error_msg(f"豆瓣书籍ID重复,请重新输入")
-                return Response(errors_msg, status=status.HTTP_200_OK)
+                return Response(errors_msg, status=status.HTTP_400_BAD_REQUEST)
             raise IntegrityError(e)
 
     def partial_update(self, request, *args, **kwargs):
@@ -76,6 +80,6 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
         if isinstance(exc, ValidationError):
             # 捕获ValidationError,构造自定义错误响应
             error_msg = self.get_error_msg(exc.detail, many=True)
-            return Response(error_msg, status=status.HTTP_200_OK)
+            return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
         
         return super().handle_exception(exc)
