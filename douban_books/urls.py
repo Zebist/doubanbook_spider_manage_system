@@ -7,12 +7,12 @@ from rest_framework.routers import DefaultRouter
 from .views import IndexVIew
 
 router = DefaultRouter()
-router.register(r'douban_books', DoubanBookViewSet)
+router.register(r'api/douban_books', DoubanBookViewSet)
 
 urlpatterns = [
     path('index/', IndexVIew.as_view()),  # 首页
     path('', IndexVIew.as_view()),  # 首页
-    path('api/', include(router.urls)),  # 豆瓣书籍api
+    path('', include(router.urls)),  # 豆瓣书籍api
 ]
 
 if settings.DEBUG:

@@ -9,4 +9,4 @@ class SpiderCenter(APIView):
         # 在视图中触发 Celery 任务
         run_spider.delay()
         # 返回成功响应
-        return Response({"code": "200", "message": "任务已触发，请稍后检查执行结果。"})
+        return Response({"code": "success", "message": "任务已触发，请稍后检查执行结果。"})

@@ -11,10 +11,27 @@
 </template>
 
 <script>
+import { Message } from 'element-ui';
 export default {
   methods: {
     startCrawling() {
-      // 处理开始爬取的逻辑
+      // 触发爬虫爬取数据
+      this.$axios.post("api/spider_center/")
+            .then(response => {
+              Message({
+                type: 'success',
+                message: response.data.message,
+                duration: 3000,
+              });
+            })
+            .catch(error => {
+                console.error(error);
+                Message({
+                  type: 'error',
+                  message: '服务异常，请稍候再试！',
+                  duration: 3000,
+                });
+            });
     }
   }
 };

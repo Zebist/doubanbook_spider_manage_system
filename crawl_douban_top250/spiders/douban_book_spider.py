@@ -20,7 +20,7 @@ class DoubanBookSpider(scrapy.Spider):
 
     def init_urls(self):
         # 初始化url列表，将数据库记录未成功爬取的加入到列表中
-        conn = getattr(self, "conn")
+        conn = getattr(self, "conn", None)
         if conn:
             cursor = conn.cursor()
             cursor.execute("""

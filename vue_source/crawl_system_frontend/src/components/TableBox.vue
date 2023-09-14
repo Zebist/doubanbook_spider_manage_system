@@ -10,6 +10,9 @@
             ref="xGrid" 
             v-bind="gridOptions"
             :row-config="rowConfig"
+            :pager-config="gridOptions.pagerConfig"
+            @sort-change="handleSortChange"
+            @page-change="handlePageChange"
         >
         <template #operate="{ row }">
             <template v-if="$refs.xGrid.isActiveByRow(row)">
@@ -76,7 +79,7 @@
           <template #summary_edit="{ row }">
             <vxe-input type="text" v-model="row.summary"></vxe-input>
           </template>
-        </vxe-grid> 
+        </vxe-grid>
 
     </div>
 </template>
@@ -91,7 +94,11 @@ export default {
                 searchContent: ''
             },
             coverPathImage: null,
+            refreshDataTimer: null,
+            refreshIntervalTime: 10000,  // 定时刷新时间
             seqColumn: [],
+            sortInfo: null,
+            pageInfo: null,
             rowConfig: {
                 height: 100,
             },
@@ -108,8 +115,7 @@ export default {
                   remote: true
                 },
                 pagerConfig: {
-                    total: 0,
-                    currentPage: 1,
+                    defaultPage: 1,
                     pageSize: 10,
                     pageSizes: [10, 20, 50, 100, 200],  // 留意limitPageSizes函数，超过maxPageSize的会被过滤掉
                     maxPageSize: 10,
@@ -147,55 +153,39 @@ export default {
         }
     },
     created() {
+        // 获取字段
         this.refreshField();
-        // this.fetchData();
+    },
+    mounted() {
+        // 启动定时刷新
+        const $grid = this.$refs.xGrid;
+        this.startRefreshInterval($grid);
     },
     methods: {
         getCellRender(key) {
             // 获取数据的方法，可以发起服务端请求
-            if (key == 'cover_path') {
-                // 处理字段渲染
-                return {
+            let renderMap = {
+                'cover_path': {  // 封面
                     'default': 'cover_path_default',
                     'edit': 'cover_path_edit',
-                };
-            }else if (key == 'douban_id') {
-                // 处理DOUBAN ID渲染
-                return {
+                },
+                'douban_id': {  // DOUBAN ID
                     'edit': 'douban_id_edit',
-                };
-            } else if (key == 'title') {
-                // 处理标题渲染
-                return {
+                },
+                'title': {  // 书名
                     'default': 'title_default',
                     'edit': 'title_edit',
-                };
-            } else if (key == 'title_2') {
-                // 辅助标题
-                return {'edit': 'title_2_edit'};
-            } else if (key == 'author') {
-                // 作者
-                return {'edit': 'author_edit'};
-            } else if (key == 'publisher') {
-                // 出版商
-                return {'edit': 'publisher_edit'};
-            } else if (key == 'publish_date') {
-                // 日期
-                return {'edit': 'publish_date_edit'};
-            } else if (key == 'price') {
-                // 价格
-                return {'edit': 'price_edit'};
-            } else if (key == 'rating') {
-                // 评分
-                return {'edit': 'rating_edit'};
-            } else if (key == 'review_count') {
-                // 评论人数
-                return {'edit': 'review_count_edit'};
-            }  else if (key == 'summary') {
-                // 简介
-                return {'edit': 'summary_edit'};
-            } 
-            return {};
+                },
+                'title_2': {'edit': 'title_2_edit'},  // 辅助书名
+                'author': {'edit': 'author_edit'},  // 作者
+                'publisher': {'edit': 'publisher_edit'},  // 出版商
+                'publish_date': {'edit': 'publish_date_edit'},  // 出版日期
+                'price': {'edit': 'price_edit'},  // 价格
+                'rating': {'edit': 'rating_edit'},  // 评分
+                'review_count': {'edit': 'review_count_edit'},  // 评论人数
+                'summary': {'edit': 'summary_edit'}  // 简介
+            };
+            return renderMap[key] || {};
         },
         getFormatter(key) {
             // 获取格式化信息
@@ -253,20 +243,25 @@ export default {
                 });
         },
         getOrdering(sorts) {
+            if (!sorts) return;
             const formattedFields = sorts.map(obj => (obj.order === 'desc' ? `-${obj.field}` : obj.field));
             // 使用 join 方法将字段拼接成逗号分隔的字符串
             return formattedFields.join(',');
         },
-        fetchData(page, sorts) {
-            // 发起服务端请求，获取数据
+        requestData(page, sorts) {
+            // 请求数据
             return this.$axios.get("api/douban_books/", {
                 'params': {
-                    page: page.currentPage,
-                    size: page.pageSize,
+                    page: page ? page.currentPage : this.gridOptions.pagerConfig.defaultPage,
+                    size: page ? page.pageSize : this.gridOptions.pageSize,
                     ordering: this.getOrdering(sorts),
                     search: this.formData.searchContent,
                 }
             })
+        },
+        fetchData(page, sorts) {
+            // 发起服务端请求，获取数据
+            return this.requestData(page, sorts)
             .then(response => {
                 this.limitPageSizes(response);
                 return response;
@@ -367,7 +362,6 @@ export default {
                 } else {  // 没有id,创建行
                     this.createRow(row, formData, $grid);
                 }
-                $grid.updateData();
             });
         },
         async removeRowEvent (row) {
@@ -424,11 +418,49 @@ export default {
                     // 在这里处理选定的文件
                     this.coverPathImage = coverPathImage;
                 }
-            },
         },
-        handleCustomRevertClick() {
-            alert('ok');
-        }
+        resetRequestInfo(){
+            // 重置信息
+            this.pageInfo = null;
+            this.sortInfo = null;
+        },
+        refreshData($grid) {
+            // 刷新数据
+            this.requestData(this.pageInfo, this.sortInfo).then(response => {
+                $grid.loadData(response.data.results);
+                $grid.tablePage.total = response.data.count;
+            })
+            .catch(error => {
+                if (error.response && error.response.status == 404) {
+                    // 404说明未查到数据，可能是数据清空的情况，重置信息
+                    this.resetRequestInfo();
+                    // 同时重新获取数据
+                    $grid.commitProxy('query');
+                }
+                console.error(error);
+            });
+        },
+        handleSortChange(sortInfo) {
+            this.sortInfo = sortInfo;
+        },
+        handlePageChange(pageInfo) {
+            this.pageInfo = pageInfo;
+        },
+        startRefreshInterval($grid) {
+            // 设置定时器，定期刷新数据
+            this.refreshDataTimer = setInterval(() => {
+                this.refreshData($grid);
+            }, this.refreshIntervalTime);
+        },
+        stopRefreshInterval() {
+        // 停止定时器
+            clearInterval(this.refreshDataTimer);
+        },
+        beforeDestroy() {
+            // 在组件销毁之前，停止定时刷新
+            this.stopRefreshInterval();
+        },
+    }
 }
 </script>
 <style scoped>
@@ -438,7 +470,7 @@ export default {
     color: #409EFF;
     font-weight: bold;
 }
-/* 图片 */
+/* 封面图片 */
 .cover_img {
     width: 100%;
     height: 100%;
