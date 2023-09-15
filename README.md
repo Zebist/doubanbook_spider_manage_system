@@ -45,16 +45,16 @@
       python manage.py runserver 0.0.0.0:8080
 ### 3. 启动Celery队列
       在根目录运行
-      celery -A scrapy_management_system worker --loglevel=info
+      celery -A scrapy_management_system worker --loglevel=info -P threads
 ### 4. 启动爬虫（注意:默认启用了代理中间件，会请求代理池，如果爬取不到数据请尝试更换代理池或关闭中间件）
-      使用IP访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
-      也可在根目录运行
+#### 访问页面，在首页可以看到【开始爬取】按钮，单击启动爬虫
+#### 也可在根目录运行
       scrapy crawl douban_book
 #### a. 页面默认每10秒刷新1次数据
 ## 四、 技术说明
       1. 使用Scrapy作为爬虫框架，通过请求头、代理切换，重定向文件识别，解决了目标网站的反爬
       2. 使用Django、DRF作为后端，使用视图集实现CRUD
-      3. 使用JQ、Bootstrap及Datatables插件搭建了前端页面
+      3. 使用vue+element-ui+vxe-table插件搭建了前端页面
 ## 五、 功能说明
 ### 1. 爬虫按钮
 ![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/5399a4c1-a2cd-4970-8d0f-18e348a7ddfe)
