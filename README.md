@@ -57,17 +57,15 @@
       3. 使用vue+element-ui+vxe-table插件搭建了前端页面
 ## 五、 功能说明
 ### 1. 爬虫按钮
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/5399a4c1-a2cd-4970-8d0f-18e348a7ddfe)
+![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/991ad830-423f-45d6-94dc-6b7b6cdb36fc)
 
 ### 2. CRUD
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/3ad02f6e-a427-486d-a4d3-aa9b112a7244)
-
-### 可以在页面底部添加数据，豆瓣书籍ID和书名、图片是必填字段（由于爬取时可以获取到ID，所以选择书籍ID进行去重）
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/4419699f-cc55-4517-b294-b568a22120cd)
+![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/353eade0-71a7-46d7-943f-340cf2d2fbf9)
 
 ### 3. 其他： 页面支持搜索、排序、分页
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/e062086e-7ecd-44c9-a024-9f9db5b25061)
-![image](https://github.com/Zebist/scrapy_manage_system/assets/31758228/3be3144b-52eb-4347-bcca-1e7f6cddfed6)
+![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/ce23259e-9526-45c6-a3f1-08f2f4db6f9f)
+![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/4e9da694-6f80-44b8-9c6f-536d91a032be)
+
 
 
 
