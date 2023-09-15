@@ -163,5 +163,5 @@ cython_debug/
 
 
 # MEDIA
-media/images/douban_books/cover_path/
+media/images/douban_books/cover_path/*
 
