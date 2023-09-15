@@ -62,7 +62,7 @@
 ### 2. CRUD
 ![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/353eade0-71a7-46d7-943f-340cf2d2fbf9)
 
-### 3. 其他： 页面支持搜索、排序、分页
+### 3. 其他： 页面支持搜索、分页、排序
 ![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/ce23259e-9526-45c6-a3f1-08f2f4db6f9f)
 ![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/4e9da694-6f80-44b8-9c6f-536d91a032be)
 
