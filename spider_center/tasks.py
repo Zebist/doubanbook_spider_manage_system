@@ -1,22 +1,27 @@
-from celery import shared_task
+# from celery import shared_task
+from scrapy_management_system.celery import app
+from multiprocessing import Process
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-import logging
 
 from crawl_douban_top250.spiders import douban_book_spider
 
+def start_spider(): 
+    crawler = CrawlerProcess(get_project_settings())
+    crawler.crawl(douban_book_spider.DoubanBookSpider)
+    crawler.start()
+    crawler.stop()
 
-@shared_task
+@app.task
 def run_spider():
     try:
-        crawler = CrawlerProcess(get_project_settings())
-        crawler.crawl(douban_book_spider.DoubanBookSpider)
-        crawler.start()  # 运行爬虫
-
-        # 如果任务成功完成，将状态设置为成功
+        p = Process(target=start_spider)
+        p.start()
+        p.join()
+        # 任务执行成功
         result = "===================== 爬虫执行成功！====================="
         return result
     except Exception as e:
-        # 如果任务失败，将状态设置为失败，并记录异常信息
+        # 任务失败，抛出异常
         raise e
     

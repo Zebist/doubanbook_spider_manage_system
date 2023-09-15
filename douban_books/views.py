@@ -32,7 +32,7 @@ class DoubanBookViewSet(viewsets.ModelViewSet):
     serializer_class = DoubanBookSerializer  # 序列化器
     pagination_class = GenericPagination  # 分页器
     ordering_fields = '__all__'  # 排序字段
-    ordering = 'id'
+    ordering = ['id', '-rating', '-review_count']
     search_fields = ['title', 'title_2', 'author', 'publisher']  # 搜索字段
     filter_backends = [OrderingFilter, SearchFilter]  # 过滤器
 
