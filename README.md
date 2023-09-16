@@ -57,7 +57,7 @@
       3. 使用vue+element-ui+vxe-table插件搭建了前端页面
 ## 五、 功能说明
 ### 1. 爬虫按钮
-![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/991ad830-423f-45d6-94dc-6b7b6cdb36fc)
+![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/1972d9d0-48e0-4abf-9942-40d26cb84c15)
 
 ### 2. CRUD
 ![image](https://github.com/Zebist/doubanbook_spider_manage_system/assets/31758228/353eade0-71a7-46d7-943f-340cf2d2fbf9)
